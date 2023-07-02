@@ -8,7 +8,7 @@ fn main() {
     part1(movements);
 }
 
-fn part1<'a>(movements: impl Iterator<Item=&'a str>) {
+fn part1<'a>(movements: impl Iterator<Item = &'a str>) {
     let mut position = (0, 0);
     let mut current_direction: u16 = 0;
     let mut have_revisited_position = false;
@@ -31,7 +31,10 @@ fn part1<'a>(movements: impl Iterator<Item=&'a str>) {
             }
 
             if !have_revisited_position && visited.contains(&position) {
-                println!("first revisited distance: {}", calculate_blocks_away(&position));
+                println!(
+                    "first revisited distance: {}",
+                    calculate_blocks_away(&position)
+                );
                 have_revisited_position = true;
             } else if !have_revisited_position {
                 visited.insert(position.clone());
