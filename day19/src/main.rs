@@ -7,13 +7,48 @@ struct Elf {
 }
 
 fn main() {
-    let input = 3014387;
+    let input = 5;
 
-    run(input, false);
-    run(input, true);
+    part1(input);
+    part2(input);
 }
 
-fn run(input: usize, part_2: bool) {
+fn part2(input: usize) {
+    let mut elves = Vec::with_capacity(input);
+
+    (1..=input).for_each(|elf_id| elves.push(elf_id));
+
+    let mut current_elf_id = 0;
+
+    let pb = ProgressBar::new(input as u64);
+
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}/{len} ({eta}) {per_sec}")
+            .unwrap()
+            .progress_chars("#>-"),
+    );
+
+    while elves.len() > 1 {
+        let steal_from_elf_index = (current_elf_id + elves.len() / 2) % elves.len();
+
+        elves.remove(steal_from_elf_index);
+
+        if steal_from_elf_index > current_elf_id {
+            current_elf_id += 1
+        }
+
+        current_elf_id %= elves.len();
+
+        pb.inc(1);
+    }
+
+    pb.finish_and_clear();
+
+    println!("{}", elves.get(0).unwrap());
+}
+
+fn part1(input: usize) {
     let mut elves = HashMap::new();
 
     (1..=input).for_each(|elf_id| {
@@ -28,21 +63,8 @@ fn run(input: usize, part_2: bool) {
 
     let mut current_elf_id = 1;
 
-    let pb = ProgressBar::new(input as u64);
-
-    pb.set_style(
-        ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}/{len} ({eta}) {per_sec}")
-            .unwrap()
-            .progress_chars("#>-"),
-    );
-
     while elves.len() > 1 {
-        let steal_from_elf_id = if !part_2 {
-            elf_to_steal_from_part_1(current_elf_id, &elves)
-        } else {
-            elf_to_steal_from_part_2(current_elf_id, &elves)
-        };
+        let steal_from_elf_id = elves.get(&current_elf_id).unwrap().next_elf_id;
         let steal_from_elf_previous_id = elves.get(&steal_from_elf_id).unwrap().previous_elf_id;
         let steal_from_elf_next_id = elves.get(&steal_from_elf_id).unwrap().next_elf_id;
 
@@ -59,26 +81,7 @@ fn run(input: usize, part_2: bool) {
         elves.remove(&steal_from_elf_id);
 
         current_elf_id = elves.get(&current_elf_id).unwrap().next_elf_id;
-        pb.inc(1);
     }
-
-    pb.finish_and_clear();
 
     println!("{}", current_elf_id);
-}
-
-fn elf_to_steal_from_part_1(current_elf_id: usize, elves: &HashMap<usize, Elf>) -> usize {
-    elves.get(&current_elf_id).unwrap().next_elf_id
-}
-
-fn elf_to_steal_from_part_2(current_elf_id: usize, elves: &HashMap<usize, Elf>) -> usize {
-    let half = elves.len() / 2;
-
-    let mut result = current_elf_id;
-
-    for _ in 0..half {
-        result = elves.get(&result).unwrap().next_elf_id;
-    }
-
-    result
 }
